@@ -7,24 +7,15 @@
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <style>
-    .btn-primary {
-      background-color: #2F4F4F;
-      border-color: #2F4F4F;
+    body {
+      text-transform: capitalize;
+      margin: 0;
     }
 
-    .btn-secondary {
-      background-color: #4F6F6F;
-      border-color: #4F6F6F;
-    }
-
-    .btn-danger {
-      background-color: #A52A2A;
-      border-color: #A52A2A;
-    }
-
-    .btn-success {
-      background-color: #3CB371;
-      border-color: #3CB371;
+    h5 {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .custom-file-upload {
@@ -39,12 +30,6 @@
 
     .custom-file-upload input[type="file"] {
       display: none;
-    }
-
-    .btn {
-      padding: 10px 20px;
-      min-width: 150px;
-      text-align: center;
     }
 
     .sidebar {
@@ -68,9 +53,81 @@
       padding: 10px;
     }
 
+    .sidebar .list-group-item .btn {
+      width: 15%;
+      border-radius: 50%;
+      margin-bottom: 0;
+      text-align: center;
+    }
+
+    .sidebar h2 {
+      text-align: center;
+    }
+
     .content {
       margin-left: 260px;
       padding: 20px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 20px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .alerts {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .file-upload-form {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .file-upload-form .form-group {
+      margin-bottom: 15px;
+    }
+
+    .file-upload-form .form-group label {
+      display: block;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      padding: 10px;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 16px;
+    }
+
+    .file-upload-form .form-group label:hover {
+      background-color: #0056b3;
+    }
+
+    .file-upload-form .form-group span {
+      display: block;
+      margin-top: 5px;
+    }
+
+    .file-upload-form .form-group select {
+      padding: 10px;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+
+    .file-upload-form button {
+      margin-top: 10px;
+    }
+
+    .files-section {
+      display: grid;
+      gap: 10px;
     }
 
     .modal-footer {
@@ -86,6 +143,28 @@
     .modal-footer .btn:last-child {
       margin-right: 0;
     }
+
+    .file-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+    }
+
+    .file-item {
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      padding: 10px;
+      border-radius: 4px;
+      background-color: #fff;
+    }
+
+    .file-item a {
+      text-decoration: none;
+      color: #007bff;
+    }
+
+    .file-item a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -97,6 +176,7 @@
         <div class="list-group-item">
           <h5 class="mb-1">
             <a href="/dashboard?folderId=<%= allFilesFolder.id %>">All Files</a>
+            <box-icon type='solid' name='file-blank'></box-icon>
           </h5>
         </div>
       <% } %>
@@ -104,7 +184,8 @@
       <% if (trashFolder) { %>
         <div class="list-group-item">
           <h5 class="mb-1">
-            <a href="/dashboard?folderId=<%= trashFolder.id %>">Trash</a>
+            <a href="/dashboard?folderId=<%= trashFolder.id %>">Trash </a>
+            <box-icon name='trash'></box-icon>
           </h5>
         </div>
       <% } %>
@@ -116,7 +197,7 @@
               <h5 class="mb-1">
                 <a href="/dashboard?folderId=<%= folder.id %>"><%= folder.name %></a>
               </h5>
-              <button type="button" class="btn btn-secondary btn-sm" data-toggle="modal" data-target="#folderModal" data-folder-id="<%= folder.id %>" data-folder-name="<%= folder.name %>">...</button>
+              <box-icon name='edit' type='solid' class='btn-icon' data-toggle="modal" data-target="#folderModal" data-folder-id="<%= folder.id %>" data-folder-name="<%= folder.name %>"></box-icon>
             </div>
           </div>          
         <% } %>
@@ -125,163 +206,150 @@
   </div>
 
   <div class="content">
-    <div class="d-flex justify-content-between align-items-center">
-      <h1 class="my-4">Dashboard</h1>
+    <div class="header">
+      <h1>Dashboard</h1>
       <a href="/logout" class="btn btn-danger">Logout</a>
     </div>
 
-    <% if (messages.success) { %>
-      <div class="alert alert-success" role="alert">
-        <%= messages.success %>
-      </div>
-    <% } %>
-    
-    <% if (messages.error) { %>
-      <div class="alert alert-danger" role="alert">
-        <%= messages.error %>
-      </div>
-    <% } %>
+    <div class="alerts">
+      <% if (messages.success) { %>
+        <div class="alert alert-success" role="alert">
+          <%= messages.success %>
+        </div>
+      <% } %>
+      
+      <% if (messages.error) { %>
+        <div class="alert alert-danger" role="alert">
+          <%= messages.error %>
+        </div>
+      <% } %>
+    </div>
 
     <!-- File Upload Form -->
-    <form action="/upload" method="post" enctype="multipart/form-data" class="mb-4">
-      <div class="form-group">
-        <label for="file" class="btn btn-primary custom-file-upload">
-          <input type="file" name="file" id="file" class="d-none"> Choose File
-        </label>
-        <span id="file-selected" class="ml-2 text-muted">No file chosen</span>
-      </div>
-      
-      <div class="form-group">
-        <label for="folder">Select Folder:</label>
-        <select name="folderId" id="folder" class="form-control" required>
-          <% folders.forEach(folder => { %>
-            <% if (folder.name !== 'Trash') { %>
-              <option value="<%= folder.id %>"><%= folder.name %></option>
-            <% } %>
-          <% }) %>
-        </select>
-      </div>
-      <button type="submit" class="btn btn-primary">Upload</button>
-    </form>
+    <div class="file-upload-form">
+      <form action="/upload" method="post" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="file" class="btn btn-primary custom-file-upload">
+            <input type="file" name="file" id="file" class="d-none"> Choose File
+          </label>
+          <span id="file-selected" class="ml-2 text-muted">No file chosen</span>
+        </div>
+        
+        <div class="form-group">
+          <select name="folderId" id="folder" class="form-control" required>
+            <% folders.forEach(folder => { %>
+              <% if (folder.name !== 'Trash') { %>
+                <option value="<%= folder.id %>"><%= folder.name %></option>
+              <% } %>
+            <% }) %>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Upload</button>
+      </form>
+    </div>
 
     <!-- Files in Selected Folder -->
-    <h2 class="my-4">Files in <%= selectedFolder.name || 'Selected Folder' %></h2>
-    <div id="files-container">
-      <% if (selectedFolder && selectedFolder.files && selectedFolder.files.length > 0) { %>
-        <div class="list-group">
+    <div class="files-section">
+      <h2 class="my-4">Files in <%= selectedFolder.name || 'Selected Folder' %></h2>
+      <div id="files-container" class="file-list">
+        <% if (selectedFolder && selectedFolder.files && selectedFolder.files.length > 0) { %>
           <% selectedFolder.files.forEach(file => { %>
-            <div class="list-group-item">
-              <div class="d-flex justify-content-between align-items-center">
-                <span>
-                  <a href="/files/<%= file.id %>/details"><%= file.name %></a>
-                </span>
-                <div>
-                  <% if (selectedFolder.name === 'Trash') { %>
-                    <form action="/files/<%= file.id %>/restore" method="post" class="d-inline">
-                      <button type="submit" class="btn btn-success btn-sm">Restore</button>
-                    </form>
-                    <form action="/files/<%= file.id %>/permanent-delete" method="post" class="d-inline">
-                      <button type="submit" class="btn btn-danger btn-sm">Permanently Delete</button>
-                    </form>
-                  <% } else { %>
-                    <form action="/files/<%= file.id %>/delete" method="POST" class="d-inline">
-                      <button type="submit" class="btn btn-warning btn-sm">Move to Trash</button>
-                    </form>
-                    <a href="/files/<%= file.id %>/download" class="btn btn-primary btn-sm">Download</a>
-                  <% } %>
-                </div>
+            <div class="file-item">
+              <a href="/files/<%= file.id %>/details"><%= file.name %></a>
+              <div class="mt-2">
+                <% if (selectedFolder.name === 'Trash') { %>
+                  <form action="/files/<%= file.id %>/restore" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-success btn-sm">Restore</button>
+                  </form>
+                  <form action="/files/<%= file.id %>/permanent-delete" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-danger btn-sm">Permanently Delete</button>
+                  </form>
+                <% } else { %>
+                  <form action="/files/<%= file.id %>/delete" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-warning btn-sm">Move to Trash</button>
+                  </form>
+                  <a href="/files/<%= file.id %>/download" class="btn btn-primary btn-sm">Download</a>
+                <% } %>
               </div>
             </div>
           <% }) %>
-        </div>
-      <% } else { %>
-        <p>No files in this folder.</p>
-      <% } %>
+        <% } else { %>
+          <p>No files in this folder.</p>
+        <% } %>
+      </div>
     </div>
   </div>
 
   <!-- Create Folder Modal -->
-  <div id="createFolderModal" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal fade" id="createFolderModal" tabindex="-1" role="dialog" aria-labelledby="createFolderModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Create New Folder</h5>
+          <h5 class="modal-title" id="createFolderModalLabel">Create New Folder</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <div class="modal-body">
-          <form id="createFolderForm" action="/folders" method="post">
+        <form action="/folders/create" method="post">
+          <div class="modal-body">
             <div class="form-group">
-              <label for="name">Folder Name</label>
-              <input type="text" id="name" name="name" class="form-control" required>
+              <label for="folderName">Folder Name</label>
+              <input type="text" class="form-control" id="folderName" name="name" required>
             </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-          <button type="submit" form="createFolderForm" class="btn btn-primary">Create Folder</button>
-        </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Create Folder</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 
-  <!-- Folder Actions Modal -->
-  <div id="folderModal" class="modal fade" tabindex="-1" role="dialog">
+  <!-- Edit Folder Modal -->
+  <div class="modal fade" id="folderModal" tabindex="-1" role="dialog" aria-labelledby="folderModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Folder Actions</h5>
+          <h5 class="modal-title" id="folderModalLabel">Edit Folder</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <div class="modal-body">
-          <p id="folderName"></p>
-
-          <!-- Rename Folder Form -->
-          <form id="renameFolderForm" method="POST">
+        <form id="editFolderForm" action="" method="post">
+          <div class="modal-body">
             <div class="form-group">
-              <label for="newFolderName">New Folder Name</label>
-              <input type="text" id="newFolderName" name="newFolderName" class="form-control" required>
+              <label for="editFolderName">Folder Name</label>
+              <input type="text" class="form-control" id="editFolderName" name="name" required>
             </div>
-            <button type="submit" class="btn btn-primary">Rename Folder</button>
-          </form>
-
-          <!-- Delete Folder Form -->
-          <form id="deleteFolderForm" method="POST" class="mt-3">
-            <button type="submit" class="btn btn-danger">Delete Folder</button>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        </div>
+            <input type="hidden" id="editFolderId" name="folderId">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
 
-  <!-- Bootstrap JS and dependencies -->
+  <!-- jQuery and Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script>
-    $('#folderModal').on('show.bs.modal', function (event) {
-      var button = $(event.relatedTarget);
-      var folderId = button.data('folder-id');
-      var folderName = button.data('folder-name');
-
-      var modal = $(this);
-      modal.find('#folderName').text(folderName);
-
-      // Update the form actions with the correct folder ID
-      modal.find('#renameFolderForm').attr('action', '/folders/' + folderId + '/rename');
-      modal.find('#deleteFolderForm').attr('action', '/folders/' + folderId + '/delete');
+    document.getElementById('file').addEventListener('change', function () {
+      document.getElementById('file-selected').textContent = this.files[0] ? this.files[0].name : 'No file chosen';
     });
 
-    // Update the file input label when a file is selected
-    $('#file').change(function() {
-      var fileName = $(this).val().split('\\').pop();
-      $('#file-selected').text(fileName || 'No file chosen');
+    document.querySelectorAll('.btn-icon').forEach(button => {
+      button.addEventListener('click', function () {
+        const folderId = this.getAttribute('data-folder-id');
+        const folderName = this.getAttribute('data-folder-name');
+        document.getElementById('editFolderId').value = folderId;
+        document.getElementById('editFolderName').value = folderName;
+        document.getElementById('editFolderForm').action = '/folders/' + folderId + '/edit';
+      });
     });
   </script>
 </body>
