@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center">
+      <h1 class="my-4">Dashboard</h1>
+      <a href="/logout" class="btn btn-danger">Logout</a>
+    </div>
+
+    <!-- File Upload Form -->
+    <form action="/upload" method="post" enctype="multipart/form-data" class="mb-4">
+      <div class="form-group">
+        <label for="file">Select File:</label>
+        <input type="file" name="file" id="file" class="form-control" required>
+      </div>
+      <div class="form-group">
+        <label for="folder">Select Folder:</label>
+        <select name="folderId" id="folder" class="form-control" required>
+          <% folders.forEach(folder => { %>
+            <% if (folder.name !== 'Trash' && folder.name !== 'All Files') { %>
+              <option value="<%= folder.id %>"><%= folder.name %></option>
+            <% } %>
+          <% }) %>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">Upload</button>
+    </form>
+
+    <!-- Add Folder Form -->
+    <h2 class="my-4">Add Folder</h2>
+    <form action="/folders" method="post">
+      <div class="form-group">
+        <label for="name">Folder Name:</label>
+        <input type="text" name="name" id="name" class="form-control" placeholder="Folder Name" required>
+      </div>
+      <button type="submit" class="btn btn-success">Create Folder</button>
+    </form>
+
+    <!-- List Folders -->
+    <h2 class="my-4">Your Folders</h2>
+    <div class="list-group">
+      <!-- "All Files" Folder -->
+      <% if (allFilesFolder) { %>
+        <div class="list-group-item">
+          <h5 class="mb-1">
+            <a href="/dashboard?folderId=<%= allFilesFolder.id %>">All Files</a>
+          </h5>
+        </div>
+      <% } else { %>
+        <div class="list-group-item">
+          <h5 class="mb-1">All Files folder not found.</h5>
+        </div>
+      <% } %>
+
+      <!-- "Trash" Folder -->
+      <% if (trashFolder) { %>
+        <div class="list-group-item">
+          <h5 class="mb-1">
+            <a href="/dashboard?folderId=<%= trashFolder.id %>">Trash</a>
+          </h5>
+        </div>
+      <% } %>
+    </div>
+
+      <!-- Other Folders -->
+      <% folders.forEach(folder => { %>
+        <% if (folder.name !== 'Trash' && folder.name !== 'All Files') { %>
+          <div class="list-group-item">
+            <h5 class="mb-1">
+              <a href="/dashboard?folderId=<%= folder.id %>"><%= folder.name %></a>
+            </h5>
+            <div>
+              <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#folderModal" data-folder-id="<%= folder.id %>" data-folder-name="<%= folder.name %>">...</button>
+            </div>
+          </div>
+        <% } %>
+      <% }) %>
+
+      <h2 class="my-4">Files in Selected Folder</h2>
+      <div id="files-container">
+        <% if (selectedFolder && selectedFolder.files && selectedFolder.files.length > 0) { %>
+          <div class="list-group">
+            <% selectedFolder.files.forEach(file => { %>
+              <div class="list-group-item">
+                <div class="d-flex justify-content-between">
+                  <span>
+                    <a href="/files/<%= file.id %>/details"><%= file.name %></a>
+                  </span>
+                  <div>
+                    <!-- Additional options such as move, delete, etc. -->
+                    <% if (selectedFolder.name === 'Trash') { %>
+                      <form action="/files/<%= file.id %>/restore" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-success btn-sm">Restore</button>
+                      </form>
+                      <form action="/files/<%= file.id %>/permanent-delete" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-danger btn-sm">Permanently Delete</button>
+                      </form>
+                    <% } else { %>
+                      <form action="/files/<%= file.id %>/moveToTrash" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-warning btn-sm">Move to Trash</button>
+                      </form>
+                      <a href="/files/<%= file.id %>/download" class="btn btn-link btn-sm">Download</a>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <p>No files in this folder.</p>
+        <% } %>
+      </div>
+
+    <!-- Folder Actions Modal -->
+    <div id="folderModal" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Folder Actions</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="renameFolderForm" action="" method="post" class="mb-2">
+              <div class="form-group">
+                <label for="newFolderName">New Folder Name:</label>
+                <input type="text" name="newName" id="newFolderName" class="form-control" required>
+              </div>
+              <button type="submit" class="btn btn-primary">Rename</button>
+            </form>
+            <form id="deleteFolderForm" action="" method="post">
+              <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- File Actions Modal -->
+    <div id="fileModal" class="modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">File Actions</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form id="restoreForm" action="" method="post" class="mb-2 d-none">
+              <button type="submit" class="btn btn-success">Restore</button>
+            </form>
+            <form id="permanentDeleteForm" action="" method="post" class="mb-2">
+              <button type="submit" class="btn btn-danger">Permanently Delete</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Modal scripts -->
+    <script>
+      $('#folderModal').on('show.bs.modal', function (event) {
+        const button = $(event.relatedTarget);
+        const folderId = button.data('folder-id');
+        const folderName = button.data('folder-name');
+
+        const renameForm = $('#renameFolderForm');
+        renameForm.attr('action', '/folders/' + folderId + '/rename');
+        renameForm.find('#newFolderName').val(folderName);
+
+        const deleteForm = $('#deleteFolderForm');
+        deleteForm.attr('action', '/folders/' + folderId + '/delete');
+      });
+
+      $('#fileModal').on('show.bs.modal', function (event) {
+        const button = $(event.relatedTarget);
+        const fileId = button.data('file-id');
+        const isTrash = button.data('is-trash');
+
+        const restoreForm = $('#restoreForm');
+        const permanentDeleteForm = $('#permanentDeleteForm');
+
+        if (isTrash) {
+          restoreForm.removeClass('d-none');
+          restoreForm.attr('action', '/files/' + fileId + '/restore');
+          permanentDeleteForm.attr('action', '/files/' + fileId + '/permanent-delete');
+        } else {
+          restoreForm.addClass('d-none');
+          permanentDeleteForm.attr('action', '/files/' + fileId + '/delete');
+        }
+      });
+    </script>
+  </div>
+</body>
+</html>
