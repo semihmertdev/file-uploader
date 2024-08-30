@@ -35,9 +35,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(session({
   store: sessionStore,
-  secret: process.env.SECRET_KEY,
+  secret: 'secret-key', 
   resave: false,
-  saveUninitialized: false,
+  saveUninitialized: true,
+  cookie: { secure: false } 
 }));
 app.use(flash());
 app.use(passport.initialize());
