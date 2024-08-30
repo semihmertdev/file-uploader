@@ -3,69 +3,111 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>File Details</title>
+  <title>File Details | CloudS</title>
   <!-- Bootstrap CSS -->
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome for icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet">
   <style>
     body {
-      background-color: #e9ecef;
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     .container {
       margin-top: 50px;
     }
     .card {
-      border-radius: 0.75rem;
-      text-align: center;
-      background-color: #ffffff;
-      border: 1px solid #dee2e6;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border-radius: 1rem;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
-    .card-title {
-      font-size: 1.5rem;
-      font-weight: 600;
+    .card-header {
+      background-color: #007bff;
+      color: white;
+      font-weight: bold;
+      text-align: center;
+      padding: 1rem;
+    }
+    .card-body {
+      padding: 2rem;
+    }
+    .file-icon {
+      font-size: 4rem;
+      color: #007bff;
+      margin-bottom: 1rem;
+    }
+    .list-group-item {
+      border: none;
+      padding: 0.75rem 1.25rem;
+      background-color: transparent;
     }
     .btn-actions {
-      margin-top: 20px;
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-    }
-    .btn-back {
-      margin-top: 20px;
-      display: block;
-      width: fit-content;
-      margin-left: auto;
-      margin-right: auto;
+      margin-top: 2rem;
     }
     .btn-icon {
-      font-size: 1.25rem;
+      margin-right: 0.5rem;
     }
-    .modal-content {
-      border-radius: 0.75rem;
+    .badge {
+      font-size: 0.9rem;
+      padding: 0.5em 0.75em;
+      margin-left: 0.5rem;
+    }
+    .file-preview {
+      max-width: 100%;
+      max-height: 300px;
+      object-fit: contain;
+      margin-top: 1rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    #shareLink {
+      word-break: break-all;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="card shadow-sm">
-      <div class="card-body">
-        <h1 class="card-title">File Details</h1>
-        <ul class="list-group list-group-flush">
-          <li class="list-group-item">
-            <strong>Name:</strong> <%= file.name %>
+    <div class="card">
+      <div class="card-header">
+        <h1 class="h3 mb-0">File Details</h1>
+      </div>
+      <div class="card-body text-center">
+        <i class="fas fa-file file-icon"></i>
+        <h2 class="card-title mb-4"><%= file.name %></h2>
+        <ul class="list-group list-group-flush text-left">
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span><strong><i class="fas fa-hdd btn-icon"></i>Size:</strong></span>
+            <span id="fileSize" data-size="<%= file.size %>"></span>
           </li>
-          <li class="list-group-item">
-            <strong>Size:</strong> <span id="fileSize" data-size="<%= file.size %>"></span>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span><strong><i class="fas fa-calendar-alt btn-icon"></i>Uploaded At:</strong></span>
+            <span id="uploadedAt" data-uploaded-at="<%= file.uploadTime %>"></span>
           </li>
-          <li class="list-group-item">
-            <strong>Uploaded At:</strong> <span id="uploadedAt" data-uploaded-at="<%= file.uploadTime %>"></span>
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span><strong><i class="fas fa-file-alt btn-icon"></i>File Type:</strong></span>
+            <span id="fileType"><%= file.name.split('.').pop().toUpperCase() %></span>
           </li>
         </ul>
+        
+        <!-- File Preview (for images) -->
+        <% if (file.name.match(/\.(jpg|jpeg|png|gif)$/i)) { %>
+          <img src="<%= file.path %>" alt="File Preview" class="file-preview">
+        <% } %>
+
         <div class="btn-actions">
-          <a href="<%= file.path %>" class="btn btn-primary" download>Download File</a>
-          <button class="btn btn-danger" data-toggle="modal" data-target="#deleteModal">Delete File</button>
+          <a href="<%= file.path %>" class="btn btn-primary btn-lg" download>
+            <i class="fas fa-download btn-icon"></i>Download
+          </a>
+          <button class="btn btn-danger btn-lg" data-toggle="modal" data-target="#deleteModal">
+            <i class="fas fa-trash-alt btn-icon"></i>Delete
+          </button>
+          <button class="btn btn-success btn-lg" data-toggle="modal" data-target="#shareModal">
+            <i class="fas fa-share-alt btn-icon"></i>Share
+          </button>
         </div>
-        <a href="/dashboard" class="btn btn-secondary btn-back">Back to Dashboard</a>
+        <a href="/dashboard" class="btn btn-secondary mt-4">
+          <i class="fas fa-arrow-left btn-icon"></i>Back to Dashboard
+        </a>
       </div>
     </div>
   </div>
@@ -81,7 +123,7 @@
           </button>
         </div>
         <div class="modal-body">
-          Are you sure you want to delete this file?
+          Are you sure you want to delete <strong><%= file.name %></strong>?
         </div>
         <div class="modal-footer">
           <form action="/files/<%= file.id %>/delete" method="POST" id="deleteForm">
@@ -93,44 +135,78 @@
     </div>
   </div>
 
+  <!-- Share Modal -->
+  <div class="modal fade" id="shareModal" tabindex="-1" role="dialog" aria-labelledby="shareModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="shareModalLabel">Share File</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>Use this link to share the file:</p>
+          <div class="input-group">
+            <input type="text" class="form-control" id="shareLink" value="<%= file.url %>" readonly>
+            <div class="input-group-append">
+              <button class="btn btn-outline-secondary" type="button" onclick="copyShareLink()">Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Bootstrap JS and dependencies -->
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
-  <!-- JavaScript to format the date and file size -->
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const fileSizeElement = document.getElementById('fileSize');
       const uploadedAtElement = document.getElementById('uploadedAt');
+      const fileTypeElement = document.getElementById('fileType');
 
-      // Function to format file size
       function formatFileSize(size) {
-        if (size >= 1073741824) {
-          return (size / 1073741824).toFixed(2) + ' GB';
-        } else if (size >= 1048576) {
-          return (size / 1048576).toFixed(2) + ' MB';
-        } else if (size >= 1024) {
-          return (size / 1024).toFixed(2) + ' KB';
-        } else {
-          return size + ' bytes';
+        const units = ['bytes', 'KB', 'MB', 'GB', 'TB'];
+        let unitIndex = 0;
+        while (size >= 1024 && unitIndex < units.length - 1) {
+          size /= 1024;
+          unitIndex++;
         }
+        return `${size.toFixed(2)} ${units[unitIndex]}`;
       }
 
-      // Function to format date
       function formatDate(date) {
-        const options = { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+        const options = { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric', 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        };
         return new Intl.DateTimeFormat('en-US', options).format(date);
       }
 
-      // Get and format file size
       const fileSize = parseInt(fileSizeElement.getAttribute('data-size'), 10);
       fileSizeElement.textContent = formatFileSize(fileSize);
 
-      // Get and format uploaded date
       const uploadedAt = new Date(uploadedAtElement.getAttribute('data-uploaded-at'));
       uploadedAtElement.textContent = formatDate(uploadedAt);
+
+      const fileType = fileTypeElement.textContent;
+      fileTypeElement.innerHTML = `${fileType} <span class="badge badge-primary">${fileType}</span>`;
     });
+
+    function copyShareLink() {
+      const shareLinkInput = document.getElementById('shareLink');
+      shareLinkInput.select();
+      document.execCommand('copy');
+      alert('Link copied to clipboard!');
+    }
   </script>
 </body>
 </html>

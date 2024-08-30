@@ -3,279 +3,253 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard</title>
+  <title>Dashboard | CloudS</title>
   <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome for icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet">
   <style>
     body {
-      text-transform: capitalize;
-      margin: 0;
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-
-    h5 {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .custom-file-upload {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .custom-file-upload:hover {
-      background-color: #317145;
-    }
-
-    .custom-file-upload input[type="file"] {
-      display: none;
-    }
-
     .sidebar {
       height: 100vh;
       width: 250px;
       position: fixed;
       top: 0;
       left: 0;
-      background-color: #f8f9fa;
-      border-right: 1px solid #ddd;
-      padding: 15px;
+      background-color: #007bff;
+      color: white;
+      padding: 20px;
       box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     }
-
+    .sidebar h2 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
     .sidebar .btn {
       width: 100%;
       margin-bottom: 10px;
+      color: #007bff;
+      background-color: white;
+      border: none;
     }
-
     .sidebar .list-group-item {
-      padding: 10px;
+      background-color: transparent;
+      border: none;
+      color: white;
+      padding: 10px 15px;
     }
-
-    .sidebar .list-group-item .btn {
-      width: 15%;
-      border-radius: 50%;
-      margin-bottom: 0;
-      text-align: center;
+    .sidebar .list-group-item:hover {
+      background-color: rgba(255, 255, 255, 0.1);
     }
-
-    .sidebar h2 {
-      text-align: center;
+    .sidebar .list-group-item a {
+      color: white;
+      text-decoration: none;
     }
-
     .content {
-      margin-left: 260px;
-      padding: 20px;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      gap: 20px;
+      margin-left: 250px;
+      padding: 30px;
     }
-
-    .header {
+    .card {
+      border-radius: 1rem;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    .card-header {
+      background-color: #007bff;
+      color: white;
+      font-weight: bold;
+      text-align: center;
+      padding: 1rem;
+    }
+    .card-body {
+      padding: 2rem;
+    }
+    .btn-icon {
+      margin-right: 0.5rem;
+    }
+    .file-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding: 15px;
+      border-bottom: 1px solid #eee;
     }
-
-    .alerts {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+    .file-item:last-child {
+      border-bottom: none;
     }
-
-    .file-upload-form {
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-
-    .file-upload-form .form-group {
-      margin-bottom: 15px;
-    }
-
-    .file-upload-form .form-group label {
-      display: block;
-      cursor: pointer;
-      background-color: #007bff;
-      color: white;
-      padding: 10px;
-      border-radius: 4px;
-      text-align: center;
-      font-size: 16px;
-    }
-
-    .file-upload-form .form-group label:hover {
-      background-color: #0056b3;
-    }
-
-    .file-upload-form .form-group span {
-      display: block;
-      margin-top: 5px;
-    }
-
-    .file-upload-form .form-group select {
-      padding: 10px;
-      border-radius: 4px;
-      border: 1px solid #ddd;
-    }
-
-    .file-upload-form button {
-      margin-top: 10px;
-    }
-
-    .files-section {
-      display: grid;
-      gap: 10px;
-    }
-
-    .modal-footer {
-      display: flex;
-      justify-content: center;
-      padding-top: 0;
-    }
-
-    .modal-footer .btn {
-      margin-right: 10px;
-    }
-
-    .modal-footer .btn:last-child {
-      margin-right: 0;
-    }
-
-    .file-list {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 10px;
-    }
-
-    .file-item {
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      padding: 10px;
-      border-radius: 4px;
-      background-color: #fff;
-    }
-
-    .file-item a {
-      text-decoration: none;
+    .file-icon {
+      font-size: 2rem;
       color: #007bff;
+      margin-right: 1rem;
     }
+    .upload-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+    }
+    .upload-form {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .custom-file-input {
+  visibility: hidden;
+  width: 0;
+}
 
-    .file-item a:hover {
-      text-decoration: underline;
-    }
+.custom-file-label {
+  display: inline-block;
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #007bff;
+  background-color: #fff;
+  border: 2px solid #007bff;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.custom-file-label:hover {
+  background-color: #007bff;
+  color: white;
+}
+
+.form-control-file{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
   </style>
 </head>
 <body>
   <div class="sidebar">
-    <h2 class="my-4">Folders</h2>
-    <button class="btn btn-primary" data-toggle="modal" data-target="#createFolderModal">Create Folder</button>
-    <div class="list-group">
+    <h2>Folders</h2>
+    <button class="btn btn-light" data-toggle="modal" data-target="#createFolderModal">
+      <i class="fas fa-folder-plus btn-icon"></i>Create Folder
+    </button>
+    <div class="list-group mt-4">
       <% if (allFilesFolder) { %>
-        <div class="list-group-item">
-          <h5 class="mb-1">
-            <a href="/dashboard?folderId=<%= allFilesFolder.id %>">All Files</a>
-            <box-icon type='solid' name='file-blank'></box-icon>
-          </h5>
-        </div>
-      <% } %>
-
-      <% if (trashFolder) { %>
-        <div class="list-group-item">
-          <h5 class="mb-1">
-            <a href="/dashboard?folderId=<%= trashFolder.id %>">Trash </a>
-            <box-icon name='trash'></box-icon>
-          </h5>
+        <div class="list-group-item folder-item" data-folder-id="<%= allFilesFolder.id %>">
+          <a href="/dashboard?folderId=<%= allFilesFolder.id %>">
+            <i class="fas fa-folder btn-icon"></i>All Files
+          </a>
         </div>
       <% } %>
 
       <% folders.forEach(folder => { %>
         <% if (folder.name !== 'Trash' && folder.name !== 'All Files') { %>
-          <div class="list-group-item">
-            <div class="d-flex justify-content-between align-items-center">
-              <h5 class="mb-1">
-                <a href="/dashboard?folderId=<%= folder.id %>"><%= folder.name %></a>
-              </h5>
-              <box-icon name='edit' type='solid' class='btn-icon' data-toggle="modal" data-target="#folderModal" data-folder-id="<%= folder.id %>" data-folder-name="<%= folder.name %>"></box-icon>
-            </div>
+          <div class="list-group-item folder-item" data-folder-id="<%= folder.id %>">
+            <a href="/dashboard?folderId=<%= folder.id %>">
+              <i class="fas fa-folder btn-icon"></i><%= folder.name %>
+            </a>
+            <i class="fas fa-edit float-right" data-toggle="modal" data-target="#folderModal" data-folder-id="<%= folder.id %>" data-folder-name="<%= folder.name %>"></i>
           </div>          
         <% } %>
       <% }) %>
+
+      <% if (trashFolder) { %>
+        <div class="list-group-item trash-item">
+          <a href="/dashboard?folderId=<%= trashFolder.id %>">
+            <i class="fas fa-trash-alt btn-icon"></i>Trash
+          </a>
+        </div>
+      <% } %>
     </div>
   </div>
 
   <div class="content">
-    <div class="header">
+    <div class="d-flex justify-content-between align-items-center mb-4">
       <h1>Dashboard</h1>
-      <a href="/logout" class="btn btn-danger">Logout</a>
+      <a href="/logout" class="btn btn-danger">
+        <i class="fas fa-sign-out-alt btn-icon"></i>Logout
+      </a>
     </div>
 
-    <div class="alerts">
-      <% if (messages.success) { %>
-        <div class="alert alert-success" role="alert">
-          <%= messages.success %>
-        </div>
-      <% } %>
-      
-      <% if (messages.error) { %>
-        <div class="alert alert-danger" role="alert">
-          <%= messages.error %>
-        </div>
-      <% } %>
-    </div>
-
-    <!-- File Upload Form -->
-    <div class="file-upload-form">
-      <form action="/upload" method="post" enctype="multipart/form-data">
-        <div class="form-group">
-          <label for="file" class="btn btn-primary custom-file-upload">
-            <input type="file" name="file" id="file" class="d-none"> Choose File
-          </label>
-          <span id="file-selected" class="ml-2 text-muted">No file chosen</span>
-        </div>
-        
-        <div class="form-group">
-          <select name="folderId" id="folder" class="form-control" required>
-            <% folders.forEach(folder => { %>
-              <% if (folder.name !== 'Trash') { %>
-                <option value="<%= folder.id %>"><%= folder.name %></option>
-              <% } %>
-            <% }) %>
-          </select>
-        </div>
-        <button type="submit" class="btn btn-primary btn-block">Upload</button>
-      </form>
-    </div>
-
-    <!-- Files in Selected Folder -->
-    <div class="files-section">
-      <h2 class="my-4">Files in <%= selectedFolder.name || 'Selected Folder' %></h2>
-      <div id="files-container" class="file-list">
-        <% if (selectedFolder && selectedFolder.files && selectedFolder.files.length > 0) { %>
-          <% selectedFolder.files.forEach(file => { %>
-            <div class="file-item">
-              <a href="/files/<%= file.id %>/details"><%= file.name %></a>
-              <div class="mt-2">
-                <% if (selectedFolder.name === 'Trash') { %>
-                  <form action="/files/<%= file.id %>/restore" method="post" class="d-inline">
-                    <button type="submit" class="btn btn-success btn-sm">Restore</button>
-                  </form>
-                  <form action="/files/<%= file.id %>/permanent-delete" method="post" class="d-inline">
-                    <button type="submit" class="btn btn-danger btn-sm">Permanently Delete</button>
-                  </form>
-                <% } else { %>
-                  <form action="/files/<%= file.id %>/delete" method="POST" class="d-inline">
-                    <button type="submit" class="btn btn-warning btn-sm">Move to Trash</button>
-                  </form>
-                  <a href="/files/<%= file.id %>/download" class="btn btn-primary btn-sm">Download</a>
-                <% } %>
-              </div>
+    <% if (messages.success || messages.error) { %>
+      <div class="card mb-4">
+        <div class="card-body">
+          <% if (messages.success) { %>
+            <div class="alert alert-success" role="alert">
+              <%= messages.success %>
             </div>
-          <% }) %>
-        <% } else { %>
-          <p>No files in this folder.</p>
+          <% } %>
+          
+          <% if (messages.error) { %>
+            <div class="alert alert-danger" role="alert">
+              <%= messages.error %>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    <% } %>
+
+    <div class="card">
+      <div class="card-header">
+        <h2 class="mb-0">Files in <%= selectedFolder.name || 'Selected Folder' %></h2>
+      </div>
+      <div class="card-body">
+        <% if (selectedFolder && selectedFolder.name !== 'Trash') { %>
+          <button class="btn btn-primary mb-4" onclick="showUploadOverlay('<%= selectedFolder.id %>', '<%= selectedFolder.name %>')">
+            <i class="fas fa-upload btn-icon"></i>Upload File
+          </button>
         <% } %>
+        
+        <div id="files-container" class="file-list">
+          <% if (selectedFolder && selectedFolder.files && selectedFolder.files.length > 0) { %>
+            <% selectedFolder.files.forEach(file => { %>
+              <div class="file-item">
+                <div>
+                  <i class="fas fa-file file-icon"></i>
+                  <a href="/files/<%= file.id %>/details"><%= file.name %></a>
+                </div>
+                <div>
+                  <% if (selectedFolder.name === 'Trash') { %>
+                    <form action="/files/<%= file.id %>/restore" method="post" class="d-inline">
+                      <button type="submit" class="btn btn-success btn-sm">
+                        <i class="fas fa-undo btn-icon"></i>Restore
+                      </button>
+                    </form>
+                    <form action="/files/<%= file.id %>/permanent-delete" method="post" class="d-inline">
+                      <button type="submit" class="btn btn-danger btn-sm">
+                        <i class="fas fa-trash-alt btn-icon"></i>Permanently Delete
+                      </button>
+                    </form>
+                  <% } else { %>
+                    <form action="/files/<%= file.id %>/delete" method="POST" class="d-inline">
+                      <button type="submit" class="btn btn-warning btn-sm">
+                        <i class="fas fa-trash btn-icon"></i>Move to Trash
+                      </button>
+                    </form>
+                    <form action="/files/<%= file.id %>/download" method="POST" class="d-inline">
+                      <button type="submit" class="btn btn-info btn-sm">
+                        <i class="fas fa-download btn-icon"></i>Download
+                      </button>
+                    </form>
+                  <% } %>
+                </div>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <p class="text-muted">No files found.</p>
+          <% } %>
+        </div>
       </div>
     </div>
   </div>
@@ -285,16 +259,16 @@
     <div class="modal-dialog" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="createFolderModalLabel">Create New Folder</h5>
+          <h5 class="modal-title" id="createFolderModalLabel">Create Folder</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <form action="/folders/create" method="post">
+        <form action="/folders/create" method="POST">
           <div class="modal-body">
             <div class="form-group">
               <label for="folderName">Folder Name</label>
-              <input type="text" class="form-control" id="folderName" name="name" required>
+              <input type="text" class="form-control" id="folderName" name="folderName" required>
             </div>
           </div>
           <div class="modal-footer">
@@ -316,13 +290,13 @@
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <form id="editFolderForm" action="" method="post">
+        <form action="/folders/edit" method="POST">
           <div class="modal-body">
+            <input type="hidden" id="editFolderId" name="folderId">
             <div class="form-group">
               <label for="editFolderName">Folder Name</label>
-              <input type="text" class="form-control" id="editFolderName" name="name" required>
+              <input type="text" class="form-control" id="editFolderName" name="folderName" required>
             </div>
-            <input type="hidden" id="editFolderId" name="folderId">
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -333,24 +307,71 @@
     </div>
   </div>
 
-  <!-- jQuery and Bootstrap JS -->
+  <!-- Upload Overlay -->
+  <div id="uploadOverlay" class="upload-overlay">
+    <div class="upload-form">
+      <h3>Upload to <span id="uploadFolderName"></span></h3>
+      <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+        <div class="form-group">
+          <input type="file" name="file" class="form-control-file form-control-sm" required>
+        </div>
+        <input type="hidden" name="folderId" id="uploadFolderId">
+        <button type="submit" class="btn btn-primary">Upload</button>
+        <button type="button" class="btn btn-secondary" onclick="closeUploadOverlay()">Cancel</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS and dependencies -->
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
   <script>
-    document.getElementById('file').addEventListener('change', function () {
-      document.getElementById('file-selected').textContent = this.files[0] ? this.files[0].name : 'No file chosen';
+    // Update folder modal fields when opened
+    $('#folderModal').on('show.bs.modal', function (event) {
+      const button = $(event.relatedTarget);
+      const folderId = button.data('folder-id');
+      const folderName = button.data('folder-name');
+      
+      const modal = $(this);
+      modal.find('#editFolderId').val(folderId);
+      modal.find('#editFolderName').val(folderName);
     });
 
-    document.querySelectorAll('.btn-icon').forEach(button => {
-      button.addEventListener('click', function () {
-        const folderId = this.getAttribute('data-folder-id');
-        const folderName = this.getAttribute('data-folder-name');
-        document.getElementById('editFolderId').value = folderId;
-        document.getElementById('editFolderName').value = folderName;
-        document.getElementById('editFolderForm').action = '/folders/' + folderId + '/edit';
-      });
-    });
+    function showUploadOverlay(folderId, folderName) {
+      document.getElementById('uploadOverlay').style.display = 'block';
+      document.getElementById('uploadFolderId').value = folderId;
+      document.getElementById('uploadFolderName').textContent = folderName;
+    }
+
+    function closeUploadOverlay() {
+      document.getElementById('uploadOverlay').style.display = 'none';
+    }
+
+    // Add click event listeners to folder items
+    document.querySelectorAll('.folder-item').forEach(item => {
+  item.addEventListener('click', function(event) {
+    if (!event.target.closest('a') && !event.target.closest('.fa-edit')) {
+      const folderId = this.getAttribute('data-folder-id');
+      
+      // Yeni rota için yönlendirme
+      window.location.href = `/dashboard?folderId=${folderId}`;
+    }
+  });
+});
+document.querySelectorAll('.trash-item').forEach(item => {
+  item.addEventListener('click', function(event) {
+    // Varsayılan bağlantı tıklama davranışını engelle
+    event.preventDefault();
+    
+    // Tıklanan öğedeki `a` etiketinden href değerini al ve rotaya yönlendir
+    const targetUrl = this.querySelector('a').getAttribute('href');
+    window.location.href = targetUrl;
+  });
+});
+
+
+
   </script>
 </body>
 </html>

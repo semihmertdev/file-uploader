@@ -218,7 +218,7 @@ app.get('/dashboard', async (req, res) => {
       allFilesFolder,
       trashFolder,
       folderId,
-      messages: req.flash() // Add this line
+      messages: req.flash()
     });
   } catch (error) {
     console.error('Error fetching folders:', error);
@@ -226,45 +226,50 @@ app.get('/dashboard', async (req, res) => {
   }
 });
 
-app.get('/files/:id/download', async (req, res) => {
+app.post('/upload', upload.single('file'), async (req, res) => {
   if (!req.isAuthenticated()) return res.redirect('/');
 
-  const fileId = parseInt(req.params.id, 10);
+  const file = req.file;
+  const folderId = parseInt(req.body.folderId, 10);
 
-  if (isNaN(fileId)) {
-    return res.status(400).send('Invalid file ID');
+  if (!file || isNaN(folderId)) {
+    return res.status(400).send('Invalid request');
   }
 
   try {
-    const file = await prisma.file.findUnique({
-      where: { id: fileId },
+    const uploadResult = await uploadToCloudinary(file.path);
+
+    const newFile = await prisma.file.create({
+      data: {
+        name: file.originalname,
+        path: file.path,
+        size: file.size,
+        url: uploadResult.secure_url,
+        folderId: folderId,
+      },
     });
 
-    if (!file) {
-      return res.status(404).send('File not found in database');
-    }
-
-    if (!file.url) {
-      return res.status(404).send('File URL not found');
-    }
-
-    res.redirect(file.url);
+    req.flash('success', 'File uploaded successfully.');
+    res.redirect(`/dashboard?folderId=${folderId}`);
   } catch (error) {
-    console.error('Error downloading file:', error);
-    res.status(500).send('Server Error');
+    console.error('Error uploading file:', error);
+    req.flash('error', 'Failed to upload file.');
+    res.redirect('/dashboard');
+  } finally {
+    fs.unlinkSync(file.path);
   }
 });
 
-app.post('/folders', async (req, res) => {
+app.post('/folders/create', async (req, res) => {
   if (!req.isAuthenticated()) return res.redirect('/');
   
-  const { name } = req.body;
+  const { folderName } = req.body;
   const userId = req.user.id;
 
   try {
     await prisma.folder.create({
       data: {
-        name,
+        name: folderName,
         userId,
       },
     });
@@ -277,55 +282,33 @@ app.post('/folders', async (req, res) => {
   }
 });
 
-app.post('/folders/:id/delete', async (req, res) => {
+app.post('/folders/edit', async (req, res) => {
   if (!req.isAuthenticated()) return res.redirect('/');
 
-  const folderId = parseInt(req.params.id, 10);
-
-  if (isNaN(folderId)) {
-    return res.status(400).send('Invalid folderId');
-  }
+  const { folderId, folderName } = req.body;
 
   try {
     const folder = await prisma.folder.findUnique({
-      where: { id: folderId },
+      where: { id: Number(folderId) },
     });
 
     if (!folder || folder.name === 'All Files' || folder.name === 'Trash') {
-      req.flash('error', 'Cannot delete this folder.');
+      req.flash('error', 'Cannot edit this folder.');
       return res.redirect('/dashboard');
     }
 
-    const trashFolder = await prisma.folder.findFirst({
-      where: { 
-        userId: req.user.id,
-        name: 'Trash',
-      },
+    await prisma.folder.update({
+      where: { id: Number(folderId) },
+      data: { name: folderName }
     });
-
-    if (!trashFolder) {
-      req.flash('error', 'Trash folder not found.');
-      return res.redirect('/dashboard');
-    }
-
-    await prisma.file.updateMany({
-      where: { folderId: folderId },
-      data: { folderId: trashFolder.id },
-    });
-
-    await prisma.folder.delete({
-      where: { id: folderId },
-    });
-
-    req.flash('success', 'Folder deleted successfully.');
+    req.flash('success', 'Folder renamed successfully.');
     res.redirect('/dashboard');
   } catch (error) {
-    console.error('Error deleting folder:', error);
-    req.flash('error', 'Failed to delete folder.');
+    console.error('Error editing folder:', error);
+    req.flash('error', 'Failed to edit folder.');
     res.redirect('/dashboard');
   }
 });
-
 
 app.post('/files/:id/delete', async (req, res) => {
   if (!req.isAuthenticated()) return res.redirect('/');
@@ -358,7 +341,6 @@ app.post('/files/:id/delete', async (req, res) => {
       return res.redirect('/dashboard');
     }
 
-    // Dosyayı çöp kutusuna taşıyın
     await prisma.file.update({
       where: { id: fileId },
       data: {
@@ -376,7 +358,6 @@ app.post('/files/:id/delete', async (req, res) => {
   }
 });
 
-
 app.post('/files/:id/restore', async (req, res) => {
   if (!req.isAuthenticated()) return res.redirect('/');
 
@@ -389,7 +370,7 @@ app.post('/files/:id/restore', async (req, res) => {
   try {
     const file = await prisma.file.findUnique({
       where: { id: fileId },
-      select: { originalFolderId: true },  // Sadece orijinal klasör ID'sini seçin
+      select: { originalFolderId: true },
     });
 
     if (!file) {
@@ -400,12 +381,11 @@ app.post('/files/:id/restore', async (req, res) => {
       return res.status(400).send('Original folder not found');
     }
 
-    // Dosyayı orijinal klasörüne geri yükleyin
     await prisma.file.update({
       where: { id: fileId },
       data: {
         folderId: file.originalFolderId,
-        originalFolderId: null,  // Orijinal klasör ID'sini temizleyin
+        originalFolderId: null,
       },
     });
 
@@ -417,10 +397,6 @@ app.post('/files/:id/restore', async (req, res) => {
     res.redirect('/dashboard');
   }
 });
-
-
-
-
 
 app.post('/files/:id/permanent-delete', async (req, res) => {
   if (!req.isAuthenticated()) return res.redirect('/');
@@ -470,68 +446,32 @@ app.post('/files/:id/permanent-delete', async (req, res) => {
   }
 });
 
-app.post('/folders/:id/rename', async (req, res) => {
+app.post('/files/:id/download', async (req, res) => {
   if (!req.isAuthenticated()) return res.redirect('/');
 
-  const { id } = req.params;
-  const { newFolderName } = req.body;
+  const fileId = parseInt(req.params.id, 10);
+
+  if (isNaN(fileId)) {
+    return res.status(400).send('Invalid file ID');
+  }
 
   try {
-    const folder = await prisma.folder.findUnique({
-      where: { id: Number(id) },
+    const file = await prisma.file.findUnique({
+      where: { id: fileId },
     });
 
-    if (!folder || folder.name === 'All Files' || folder.name === 'Trash') {
-      req.flash('error', 'Cannot rename this folder.');
-      return res.redirect('/dashboard');
+    if (!file) {
+      return res.status(404).send('File not found in database');
     }
 
-    await prisma.folder.update({
-      where: { id: Number(id) },
-      data: { name: newFolderName }
-    });
-    req.flash('success', 'Folder renamed successfully.');
-    res.redirect('/dashboard');
+    if (!file.url) {
+      return res.status(404).send('File URL not found');
+    }
+
+    res.redirect(file.url);
   } catch (error) {
-    console.error('Error renaming folder:', error);
-    req.flash('error', 'Failed to rename folder.');
-    res.redirect('/dashboard');
-  }
-});
-
-app.post('/upload', upload.single('file'), async (req, res) => {
-  if (!req.isAuthenticated()) return res.redirect('/');
-
-  const file = req.file;
-  const folderId = parseInt(req.body.folderId, 10);
-
-  if (!file || isNaN(folderId)) {
-    return res.status(400).send('Invalid request');
-  }
-
-  try {
-    const uploadResult = await uploadToCloudinary(file.path);
-
-    const newFile = await prisma.file.create({
-      data: {
-        name: file.originalname,
-        path: file.path, // Consider using uploadResult.public_id if you want to store the Cloudinary path
-        size: file.size,
-        url: uploadResult.secure_url,
-        folderId: folderId,
-        // uploadTime is set to @default(now()) in the schema, so we don't need to specify it here
-        // originalFolderId is optional, so we don't need to specify it for a new upload
-      },
-    });
-
-    req.flash('success', 'File uploaded successfully.');
-    res.redirect(`/dashboard?folderId=${folderId}`);
-  } catch (error) {
-    console.error('Error uploading file:', error);
-    req.flash('error', 'Failed to upload file.');
-    res.redirect('/dashboard');
-  } finally {
-    fs.unlinkSync(file.path);
+    console.error('Error downloading file:', error);
+    res.status(500).send('Server Error');
   }
 });
 
